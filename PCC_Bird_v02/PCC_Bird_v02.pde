@@ -72,7 +72,7 @@ void draw()
   {
     if(gameOver == true)
     {
-      gameOverF();
+      gameOverFunction();
       if((mousePressed == true || mousePressed == true)&& (millis()-clickOut>1500))
       {
         initiation();
