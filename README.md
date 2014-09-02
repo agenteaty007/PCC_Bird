@@ -7,7 +7,7 @@ On each folder you will be able to find a PDE file, from Processing, and an html
 
 Release notes:
 --------
-
+<pre>
 PCC Bird v0.2
   Date: 03-03-14
   Author: Alberto Tam Yong
@@ -20,9 +20,9 @@ PCC Bird v0.2
   Future adds:
   - Improve space between pipes
   - Add a menu at the beginning to set up game
-
+</pre>
 ----------
-  
+<pre>
 PCC Bird v0.1
   Date: 02-28-14
   Author: Alberto Tam Yong
@@ -37,3 +37,4 @@ PCC Bird v0.1
   - Real gravity using physic laws
   - Improve space between pipes
   - Add a menu at the beginning to set up game
+</pre>
