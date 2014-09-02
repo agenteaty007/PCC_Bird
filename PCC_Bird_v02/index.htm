@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bird Game - Educational/Recreation</title>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="processing-1.4.1.js"></script>
+
+    <!--
+        This is a source-file-less sketch, loaded from inline source code in
+        the html header. This only works if the script specifies a data-processing-target
+    -->
+    <script type="text/processing" data-processing-target="targetcanvas">
+    
+/*
+  PCC Bird v0.1
+  Date: 02-28-14
+  Author: Alberto Tam Yong
+  
+  Credit: Images from Clumsy Bird open-source project
+  https://github.com/ellisonleao/clumsy-bird
+  
+  It works! This version includes pipes and points.
+  It could be considered first release version.
+  Problems: It lags!!!
+  Future adds:
+  - Real gravity using physic laws
+  - Improve space between pipes
+  - Add a menu at the beginning to set up game
+*/
+
+PImage bg;
+PImage bird;
+PImage[] pipeTop = new PImage[3];
+PImage[] pipeBottom = new PImage[3];
+PImage tempP;
+PImage ground;
+
+PFont font;
+
+/* @pjs preload="bg.png,clumsyOne.png,pipe.png,pipeBottom.png,ground.png"; */
+
+//change this values to set up the game
+int windowX=640, windowY=480, gravity=3, setGameSpeed=7, setJump=5,floor=100,points=0;
+int gameSpeed=setGameSpeed,jump=setJump;
+boolean gameStart = false, gameOver = false;
+int birdX,birdY,birdSizeX=48,birdSizeY=36;
+int[][] pipe = {{0,0,50,500},
+                {0,0,50,500},
+                {0,0,50,500},
+                {0,0,50,500},
+                {0,0,50,500},
+                {0,0,50,500}};
+int pipeNumber=3,pipeDistance=windowX/3,pipeMin=80,pipeMax=240,gap=180;
+int clickIn=0,clickOut=0;
+long time=0;
+int groundX=0;
+
+void setup()
+{
+  size(640,480);
+  bg = loadImage("bg.png");
+  bird = loadImage("clumsyOne.png");
+  for(int i=0;i<pipeNumber;i++)
+  {
+    pipeTop[i] = loadImage("pipe.png");
+    pipeBottom[i] = loadImage("pipeBottom.png");
+  }
+  tempP=loadImage("pipe.png");
+  ground = loadImage("ground.png");
+  
+  font = createFont("Arial",48,true);
+  
+  background(255,255,255);
+  initiation();
+}
+
+void draw()
+{
+  if(gameSpeed != 0 && gameStart == true)
+  {
+    game();
+    pipes();
+    movingGround();
+    refreshImages();
+  }
+  else
+  {
+    if(gameOver == true)
+    {
+      gameOverF();
+      if((mousePressed == true || mousePressed == true)&& (millis()-clickOut>1500))
+      {
+        initiation();
+      }
+    }
+  }
+}
+
+void mousePressed()
+{
+  gameStart = true;
+}
+
+void keyPressed()
+{
+  gameStart = true;
+}
+
+void initiation()
+{
+  birdX = 200;
+  birdY = height/2;
+  
+  gameOver = false;
+  gameStart = false;
+  gameSpeed = 7;
+  jump = 5;
+  points = 0;
+  
+  //pipes
+  for(int i = 0; i<pipeNumber; i++)
+  {
+    time = second() + clickIn + clickOut + i;
+    randomSeed(time);
+    pipe[2*i][0] = windowX+(i*pipeDistance);
+    pipe[2*i][1] = (int)(random(pipeMin-pipe[2*i][3],pipeMax-pipe[2*i][3]));
+    pipe[2*i+1][0] = pipe[2*i][0];
+    pipe[2*i+1][1] = pipe[2*i][1]+pipe[2*i][3]+gap;
+  }
+  image(bg,0,0,windowX,windowY);
+  
+  refreshImages();
+  
+  //Instructions
+  textFont(font,48);
+  stroke(0);
+  fill(0);
+  text("Click to Start",windowX/2-140,windowY/4);
+}
+
+void game()
+{ 
+  if((mousePressed == true && mouseButton == LEFT && (millis()-clickIn)<100)||(keyPressed == true && key == ' ' && (millis()-clickIn)<100))
+  {
+    clickOut = millis();
+    birdY = ((birdY-=jump) <= 0) ? 0 : birdY - jump;
+  }
+  else if(mousePressed == false && keyPressed == false)
+  {
+    clickIn = millis();
+    birdY = ((birdY+(gravity)) >= windowY-floor) ? windowY-floor : birdY + (gravity);
+  }
+  else
+  {	
+    birdY = ((birdY+(gravity)) >= windowY-floor) ? windowY-floor : birdY + (gravity);
+	}
+}
+
+void pipes()
+{
+  if(millis()>2500)
+  {
+    for(int i = 0; i<pipeNumber; i++)
+    {
+      if(pipe[2*i][0]>= -gameSpeed-pipe[2*i][2])
+      {
+        pipe[2*i][0] -= gameSpeed;
+        pipe[2*i+1][0] -= gameSpeed;
+        if(((birdX+birdSizeX) > pipe[2*i][0]) && (birdX < (pipe[2*i][0]+pipe[2*i][2])))
+        {
+          if((birdY <= (pipe[2*i][1]+pipe[2*i][3])) || (birdY+birdSizeY) >= (pipe[2*i+1][1]))
+            gameOverF();
+          else if(birdX+gameSpeed >= (pipe[2*i][0]+pipe[2*i][2]))
+            points++;
+        }
+        
+      }
+      else
+      {
+        time = second() + clickIn + clickOut;
+        randomSeed(time);
+        pipe[2*i][0] = windowX;
+        pipe[2*i+1][0] = pipe[2*i][0];
+        pipe[2*i][1] = (int)(random(pipeMin-pipe[2*i][3],pipeMax-pipe[2*i][3]));
+        pipe[2*i+1][1] = pipe[2*i][1]+pipe[2*i][3]+gap;
+      }
+    }
+  }
+}
+
+void movingGround()
+{
+  if(groundX <= (-windowX + gameSpeed))
+    groundX = 0;
+  else
+    groundX -= gameSpeed;
+}
+
+void gameOverF()
+{
+  textFont(font,48);
+  stroke(0);
+  fill(0);
+  text("Game Over",windowX/2-130,windowY*4/11);
+  
+  textFont(font,24);
+  text("Click to start again",windowX/2-100,windowY*4/11+30);
+  //println("Game Over");
+  gameSpeed = 0;
+  jump = 0;
+  gameOver = true;
+}
+
+void refreshImages()
+{
+  image(bg,0,0,windowX,windowY);
+  image(bird,birdX,birdY,birdSizeX,birdSizeY);
+  image(ground,groundX,windowY-floor+birdSizeY,windowX*2,floor+birdSizeY);
+  for(int i = 0;i < pipeNumber; i++)
+  {
+    image(pipeTop[i],pipe[2*i][0],pipe[2*i][1],pipe[2*i][2],pipe[2*i][3]);
+    image(pipeBottom[i],pipe[2*i+1][0],pipe[2*i+1][1],pipe[2*i+1][2],pipe[2*i+1][3]);
+  }
+  
+  textFont(font,24);
+  stroke(0);
+  fill(0);
+  text("Points: "+points,windowX/2-50,windowY-20);
+}
+
+    </script>
+  </head>
+
+  <body>
+    <h3>Bird Game!</h3>
+	
+	<canvas id="targetcanvas" style="border: 1px solid black;"></canvas>
+	
+    <p>This is an early release, but I hope you enjoy the game.</p>
+	<hr>
+	<p>I'm having difficulties posting the source code, but you can download it <a href="http://alberto.cscpcc.org/flappy/Hot_Balloon_v005.zip">here</a>.</p>
+	
+	<p>For more info, you can reach me on twitter: @alberto0714
+	<p>Here's the header with some details and possible changes.</p>
+	<pre>
+/*
+  PCC Bird v0.1
+  Date: 02-28-14
+  Author: Alberto Tam Yong
+  
+  Credit: Images from Clumsy Bird open-source project
+  https://github.com/ellisonleao/clumsy-bird
+  
+  It works! This version includes pipes and points.
+  It could be considered first release version.
+  Future adds:
+  - Real gravity using physic laws
+  - Improve space between pipes
+  - Add a menu at the beginning to set up game
+*/
+
+</pre>
+
+    
+  </body>
+</html>
