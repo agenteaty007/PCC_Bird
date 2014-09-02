@@ -68,11 +68,16 @@ void draw()
     movingGround();
     refreshImages();
   }
-  else if(gameOver == true)
+  else
   {
-    gameOverFunction();
-    if(mousePressed == true)
-      initiation();
+    if(gameOver == true)
+    {
+      gameOverF();
+      if((mousePressed == true || mousePressed == true)&& (millis()-clickOut>1500))
+      {
+        initiation();
+      }
+    }
   }
 }
 
